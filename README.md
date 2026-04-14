@@ -102,7 +102,74 @@ Template::display( 'sample-template', array(
 
 ## Creating a New Plugin from This Template
 
-See `CLAUDE.md` for detailed instructions on how to adapt this template for a new plugin.
+Copy this template into a new directory, then use an AI agent (Claude Code) to build your plugin. The `CLAUDE.md` file guides the agent through renaming the template, structuring code, writing tests, and following WordPress standards — you don't need to mention any of that in your prompt.
+
+### What to include in your prompt
+
+Focus on **what the plugin does** and **how you'd architect it**. The template handles coding standards, testing approach, file structure, and build tooling automatically.
+
+**Your prompt should cover:**
+
+- **Plugin name and purpose** — what does it do, who is it for?
+- **Data storage decisions** — `wp_options` vs custom tables vs post meta vs transients (and why)
+- **User-facing features** — shortcodes, blocks, widgets, frontend output
+- **Admin features** — settings pages, dashboard widgets, admin columns
+- **API choices** — REST API vs admin-ajax, external API integrations
+- **Scheduled tasks** — WP-Cron jobs, data cleanup, cache invalidation
+- **Integration points** — other plugins it should work with, hooks to expose
+
+**You can skip (the template handles these):**
+
+- Coding standards and linting setup
+- Test framework and testing approach
+- File structure and namespacing
+- Asset compilation and build tooling
+- Template rendering system
+- Plugin activation/deactivation boilerplate
+- How to produce the final distributable zip
+
+### Prompt template
+
+```
+I want to create a WordPress plugin called "{Plugin Name}".
+
+{What the plugin does — 2-3 sentences.}
+
+Architecture:
+- {Data storage: where and how data is stored}
+- {Features: shortcodes, blocks, REST endpoints, admin pages, etc.}
+- {Integrations: other plugins, external APIs, WP-Cron jobs, etc.}
+- {Any other technical decisions you'd make as the developer}
+
+This plugin should be built on top of the plugin template in this repo.
+Follow the instructions in CLAUDE.md to rename the template first,
+then implement the features.
+```
+
+### Example
+
+```
+I want to create a WordPress plugin called "Event Tracker".
+
+It tracks custom events on the frontend (button clicks, form submissions)
+and displays analytics in an admin dashboard.
+
+Architecture:
+- Store events in a custom database table (high volume, not suitable for post meta)
+- Use the REST API for the frontend JS to send events (POST /events)
+- Cache aggregated stats in transients with 1 hour expiry
+- Admin dashboard page: total events, events per day chart, top 10 events by count
+- [event_tracker_summary] shortcode: displays total count for a given event name
+- Settings page: toggle tracking on/off, set data retention period in days
+- WP-Cron job to purge events older than the retention period (daily)
+- Expose a filter `event_tracker_before_save` so other plugins can modify event data
+
+This plugin should be built on top of the plugin template in this repo.
+Follow the instructions in CLAUDE.md to rename the template first,
+then implement the features.
+```
+
+The more architectural context you provide, the better the output. Think of yourself as the architect and the AI as the builder — you decide *what* and *how*, the template defines the building code.
 
 ## License
 

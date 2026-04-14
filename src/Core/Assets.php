@@ -37,7 +37,10 @@ class Assets {
 			WP_PLUGIN_TEMPLATE_URL . 'assets/js/main.js',
 			array(),
 			WP_PLUGIN_TEMPLATE_VERSION,
-			true
+			array(
+				'in_footer' => true,
+				'strategy'  => 'defer',
+			)
 		);
 	}
 }

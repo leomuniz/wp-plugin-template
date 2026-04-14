@@ -93,7 +93,8 @@ fi
 
 # Individual files.
 [ -f LICENSE ] && cp LICENSE "$BUILD_DIR/"
-[ -f README.md ] && cp README "$BUILD_DIR/" 2>/dev/null || cp README.md "$BUILD_DIR/" 2>/dev/null || true
+[ -f readme.txt ] && cp readme.txt "$BUILD_DIR/"
+[ -f README.md ] && cp README.md "$BUILD_DIR/" 2>/dev/null || true
 
 # ---------- clean up artifacts ----------
 

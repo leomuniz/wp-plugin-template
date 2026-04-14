@@ -124,7 +124,7 @@ class SampleTest extends TestCase {
 				Mockery::type( 'string' ),
 				array(),
 				Mockery::type( 'string' ),
-				true
+				Mockery::type( 'array' )
 			);
 
 		$assets = new Assets();

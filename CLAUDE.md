@@ -43,7 +43,8 @@ Before writing any feature code, you MUST update all template references to matc
 - `views/admin/settings-page.php` — Setting group name
 - `tests/bootstrap.php` — Plugin file path
 - `tests/SampleTest.php` — Namespace, class references
-- `README.md` — Plugin name, descriptions
+- `readme.txt` — Rewrite entirely for the new plugin (WordPress.org listing: description, installation, FAQ, changelog)
+- `README.md` — Rewrite entirely for the new plugin (GitHub-facing: dev setup, architecture, usage)
 - `LICENSE` — Copyright holder name
 
 ### After renaming
@@ -152,12 +153,13 @@ When adding a new feature:
 
 This plugin follows [Semantic Versioning 2.0.0](https://semver.org/).
 
-**When completing a development round**, update the version number in BOTH of these locations:
+**When completing a development round**, update the version in ALL of these locations:
 
 1. **Main plugin file** (`wp-plugin-template.php`) — the `Version:` line in the plugin header comment
 2. **Main plugin file** (`wp-plugin-template.php`) — the `WP_PLUGIN_TEMPLATE_VERSION` constant
+3. **`readme.txt`** — the `Stable tag:` header AND add a changelog entry under `== Changelog ==`
 
-Both values MUST always match. Use semantic versioning:
+All version values MUST always match. Use semantic versioning:
 
 - **MAJOR** (X.0.0) — Incompatible API changes, breaking changes to hooks or public methods
 - **MINOR** (0.X.0) — New features added in a backward-compatible way
@@ -338,6 +340,76 @@ composer test
 - **Nonces**: Use nonces for form submissions and AJAX requests.
 - **Capabilities**: Check `current_user_can()` before privileged operations.
 
+## Plugin Check (PCP) Compliance
+
+This plugin targets compatibility with [Plugin Check (PCP)](https://wordpress.org/plugins/plugin-check/), the official WordPress.org plugin validation tool. A GitHub Actions workflow runs PCP automatically on every push and PR.
+
+Follow these rules to pass PCP checks. Violations caught late are expensive to fix — follow them from the start:
+
+### Escaping (late escaping)
+
+All output MUST be escaped **immediately** before rendering. Never echo a variable without escaping, even if it was sanitized earlier:
+
+```php
+// WRONG — escaped too early, or not at all.
+$title = esc_html( $raw_title );
+echo "<h2>$title</h2>";
+
+// CORRECT — escaped at the point of output.
+echo '<h2>' . esc_html( $raw_title ) . '</h2>';
+```
+
+Use `esc_html_e()` / `esc_html__()` / `esc_attr_e()` / `esc_attr__()` for translated strings instead of `_e()` / `__()` followed by manual escaping.
+
+### Internationalization (i18n)
+
+- Every user-facing string MUST use a translation function with the plugin text domain.
+- Add translator comments for strings with placeholders:
+
+```php
+/* translators: %s: user display name */
+printf( esc_html__( 'Hello, %s!', 'wp-plugin-template' ), esc_html( $user->display_name ) );
+```
+
+### Script loading strategy
+
+Always enqueue scripts with a loading strategy (`defer` or `async`) and in the footer. Do NOT pass just `true` as the last argument to `wp_enqueue_script()`:
+
+```php
+wp_enqueue_script(
+    'handle',
+    $url,
+    array(),
+    $version,
+    array(
+        'in_footer' => true,
+        'strategy'  => 'defer',
+    )
+);
+```
+
+### Database queries
+
+- Use WordPress API functions (`get_option`, `get_posts`, `WP_Query`) instead of direct `$wpdb` queries whenever possible.
+- When direct queries are necessary, ALWAYS use `$wpdb->prepare()` for parameterized queries.
+
+### Sanitization
+
+- Sanitize ALL input from `$_POST`, `$_GET`, `$_REQUEST`, and `$_SERVER` with appropriate functions (`sanitize_text_field()`, `absint()`, `sanitize_email()`, etc.).
+- Use `register_setting()` with a `sanitize_callback` — never save raw option values.
+
+### Prefixing
+
+- All global functions, constants, and variables MUST use the plugin prefix.
+- PSR-4 namespaced classes satisfy this requirement automatically.
+- Be careful with standalone helper functions outside namespaces — always prefix them.
+
+### Files and headers
+
+- The `readme.txt` must have valid headers: `Stable tag`, `Tested up to`, `Requires at least`, `Requires PHP`, `License`.
+- `Stable tag` in `readme.txt` MUST match `Version` in the plugin header.
+- Never ship `.DS_Store`, `.git/`, `.claude/`, `.env`, or other dev/system files — `build-zip.sh` handles this.
+
 ## Build Commands
 
 | Command | Purpose |
@@ -377,7 +449,7 @@ The zip contains **only what WordPress needs to run the plugin** — no tests, n
 | `assets/` (CSS, JS, images) | `node_modules/`, `.git/` |
 | `views/`, `languages/` | `phpcs.xml.dist`, `phpunit.xml.dist` |
 | `vendor/` (autoloader, no dev) | `CLAUDE.md`, `.claude/`, `build-zip.sh` |
-| `LICENSE`, `README.md` | `.gitignore`, `.env` |
+| `LICENSE`, `README.md`, `readme.txt` | `.gitignore`, `.env` |
 
 ### Publishing a GitHub release
 
@@ -404,9 +476,10 @@ gh release create v1.0.0 dist/{plugin-slug}-1.0.0.zip \
 
 Before releasing, verify:
 
-1. Version is updated in **both** the plugin header and the `*_VERSION` constant (see [Versioning](#versioning))
-2. `composer phpcs` passes with no errors
-3. `composer test` passes
-4. `npm run build` completes without errors
-5. The plugin works correctly on a test WordPress installation
-6. `docs/hooks.md` is up to date with any new or changed hooks
+1. Version is updated in the plugin header, `*_VERSION` constant, AND `readme.txt` `Stable tag` (see [Versioning](#versioning))
+2. `readme.txt` has a changelog entry for the new version
+3. `composer phpcs` passes with no errors
+4. `composer test` passes
+5. `npm run build` completes without errors
+6. The plugin works correctly on a test WordPress installation
+7. `docs/hooks.md` is up to date with any new or changed hooks
