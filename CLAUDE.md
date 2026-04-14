@@ -351,3 +351,62 @@ composer test
 | `npm run lint:js` | Lint JavaScript files |
 | `npm run lint:css` | Lint CSS files |
 | `composer test` | Run PHPUnit tests (BrainMonkey) |
+| `./build-zip.sh` | Build production .zip in `dist/` |
+| `./build-zip.sh --clean` | Remove the `dist/` directory |
+
+## Releasing
+
+### Building the production zip
+
+Run `./build-zip.sh` to create a distributable `.zip` file in `dist/`. The script:
+
+1. Installs production-only PHP dependencies (no dev packages)
+2. Compiles JavaScript/CSS assets (`npm run build`)
+3. Copies only production files into the zip
+4. Restores dev dependencies afterward
+
+The zip contains **only what WordPress needs to run the plugin** — no tests, no source JS, no config files, no dev tooling.
+
+**What goes into the zip:**
+
+| Included | Excluded |
+|---|---|
+| `{slug}.php`, `uninstall.php`, `index.php` | `composer.json`, `package.json`, `*.lock` |
+| `src/` (PHP classes only) | `src/js/` (uncompiled React source) |
+| `build/` (compiled blocks) | `tests/`, `docs/` |
+| `assets/` (CSS, JS, images) | `node_modules/`, `.git/` |
+| `views/`, `languages/` | `phpcs.xml.dist`, `phpunit.xml.dist` |
+| `vendor/` (autoloader, no dev) | `CLAUDE.md`, `.claude/`, `build-zip.sh` |
+| `LICENSE`, `README.md` | `.gitignore`, `.env` |
+
+### Publishing a GitHub release
+
+After building the zip, create a GitHub release:
+
+```bash
+# 1. Make sure the version is updated and committed.
+# 2. Build the zip.
+./build-zip.sh
+
+# 3. Create a git tag.
+git tag v1.0.0
+
+# 4. Push the tag.
+git push origin v1.0.0
+
+# 5. Create the GitHub release with the zip attached.
+gh release create v1.0.0 dist/{plugin-slug}-1.0.0.zip \
+    --title "v1.0.0" \
+    --notes "Release notes here."
+```
+
+### Release checklist
+
+Before releasing, verify:
+
+1. Version is updated in **both** the plugin header and the `*_VERSION` constant (see [Versioning](#versioning))
+2. `composer phpcs` passes with no errors
+3. `composer test` passes
+4. `npm run build` completes without errors
+5. The plugin works correctly on a test WordPress installation
+6. `docs/hooks.md` is up to date with any new or changed hooks
