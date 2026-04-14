@@ -1,0 +1,28 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# Build output
+/build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+
+# Composer lock (plugin — not committed)
+composer.lock
+
+# PHPUnit cache
+.phpunit.result.cache
+
+# Debug
+debug.log

@@ -1,0 +1,35 @@
+{
+	"name": "your-vendor/wp-plugin-template",
+	"description": "A WordPress plugin template for rapid plugin development.",
+	"type": "wordpress-plugin",
+	"license": "MIT",
+	"require": {
+		"php": ">=7.4"
+	},
+	"require-dev": {
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+		"wp-coding-standards/wpcs": "^3.0",
+		"phpunit/phpunit": "^9.0",
+		"brain/monkey": "^2.7"
+	},
+	"autoload": {
+		"psr-4": {
+			"WPPluginTemplate\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"WPPluginTemplate\\Tests\\": "tests/"
+		}
+	},
+	"scripts": {
+		"phpcs": "phpcs",
+		"phpcbf": "phpcbf",
+		"test": "phpunit"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	}
+}

@@ -1,0 +1,7 @@
+/**
+ * Block styles – applied only in the editor.
+ */
+.wp-block-wp-plugin-template-sample-block {
+	border-color: #007cba;
+	border-style: dashed;
+}

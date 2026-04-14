@@ -1,0 +1,8 @@
+/**
+ * Block styles – applied on both frontend and editor.
+ */
+.wp-block-wp-plugin-template-sample-block {
+	padding: 1rem;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+}
