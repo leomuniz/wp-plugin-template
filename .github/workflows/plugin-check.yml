@@ -24,17 +24,25 @@ jobs:
         with:
           php-version: '8.2'
 
-      - name: Install dependencies and build
+      - name: Install dependencies
         run: |
-          composer install --no-dev --optimize-autoloader --no-interaction
+          composer install --no-interaction
           npm ci
-          npm run build
+
+      - name: Build production zip
+        run: ./build-zip.sh
+
+      - name: Extract zip for checking
+        run: |
+          PLUGIN_SLUG=$(basename dist/*.zip .zip | sed 's/-[0-9].*//')
+          mkdir -p /tmp/plugin-check
+          unzip -q dist/*.zip -d /tmp/plugin-check/
+          echo "PLUGIN_DIR=/tmp/plugin-check/${PLUGIN_SLUG}" >> "$GITHUB_ENV"
 
       - name: Run Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: './'
-          exclude-directories: 'node_modules,.git,.github,.claude,tests,docs'
+          build-dir: ${{ env.PLUGIN_DIR }}
           categories: |
             plugin_repo
             general
